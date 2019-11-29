@@ -40,19 +40,19 @@ Deploy with apache and gunicorn
 
 In apache conf
 
-<Location "/api">
+`<Location "/api">
 	 Header set Access-Control-Allow-Origin "*"
   	 Header set Access-Control-Allow-Headers "Origin, X-Requested-With, Content-Type, Accept, Authorization"
      ProxyPass "http://127.0.0.1:5000/api/"
   	 ProxyPassReverse "http://127.0.0.1:5000/api/"
-</Location>
+</Location>`
 
 logs
 
+    $ mkdir /var/log/api-mreport
+    $ sudo chown myuser /var/log/api-mreport
 
-mkdir /var/log/api-mreport
 
-set write rights to the api user
 
 Test gunicorn
 
