@@ -1,10 +1,8 @@
 # api-mreport
 flask api for mreport
 
-Install
--------
-
-::
+Install::
+---------
 
     # clone the repository
     $ git clone https://github.com/spelhate/api-mreport.git
