@@ -66,3 +66,29 @@ Test gunicorn
 
 
     $ gunicorn -c gunicorn.conf -b 0.0.0.0:5000 app:app
+    
+ ```Create a .service file for the api. (/etc/systemd/system/api-mreport.service):```
+
+```
+[Unit]
+Description=api-mreport
+After=network.target
+
+[Service]
+User=customuser
+Restart=on-failure
+WorkingDirectory=/home/customuser/api-mreport/
+ExecStart=/home/customuser/api-mreport/venv/bin/gunicorn -c /home/customuser/api-mreport/gunicorn.conf -b 0.0.0.0:5000 app:app
+
+[Install]
+WantedBy=multi-user.target
+```
+
+
+```Enable and start the service```
+
+ $ sudo systemctl daemon-reload
+ $ sudo systemctl enable api-mreport
+ $ systemctl start api-mreport
+ 
+ 
