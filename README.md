@@ -87,8 +87,8 @@ WantedBy=multi-user.target
 
 ```Enable and start the service```
 
- $ sudo systemctl daemon-reload
- $ sudo systemctl enable api-mreport
- $ systemctl start api-mreport
+    $ sudo systemctl daemon-reload
+    $ sudo systemctl enable api-mreport
+    $ systemctl start api-mreport
  
  
