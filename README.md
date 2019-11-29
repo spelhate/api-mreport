@@ -3,7 +3,7 @@ flask api for mreport
 
 Install
 ---------
-::
+
     # clone the repository
     $ git clone https://github.com/spelhate/api-mreport.git
     $ cd api-mreport
@@ -11,15 +11,11 @@ Install
 
 Create a virtualenv and activate it
 
-::
-
     $ python3 -m venv venv
     $ . venv/bin/activate
 
 
 Install Flask and dependencies
-
-::
 
     $ pip install --trusted-host pypi.org --trusted-host files.pythonhosted.org -r requirements.txt
 
@@ -28,16 +24,12 @@ Install Flask and dependencies
 Configure
 ---------
 
-::
-
 Edit config.py and set SQLALCHEMY_DATABASE_URI
 
 
 
 Run
 ---
-
-::
 
     $ export FLASK_APP=app
     $ flask run
@@ -48,8 +40,6 @@ Deploy with apache and gunicorn
 
 In apache conf
 
-::
-
 <Location "/api">
 	 Header set Access-Control-Allow-Origin "*"
   	 Header set Access-Control-Allow-Headers "Origin, X-Requested-With, Content-Type, Accept, Authorization"
@@ -59,7 +49,6 @@ In apache conf
 
 logs
 
-::
 
 mkdir /var/log/api-mreport
 
@@ -67,6 +56,5 @@ set write rights to the api user
 
 Test gunicorn
 
-::
 
-gunicorn -c gunicorn.conf -b 0.0.0.0:5000 app:app
+    $ gunicorn -c gunicorn.conf -b 0.0.0.0:5000 app:app
