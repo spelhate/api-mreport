@@ -40,12 +40,14 @@ Deploy with apache and gunicorn
 
 In apache conf
 
-`<Location "/api">
+```
+<Location "/api">
 	 Header set Access-Control-Allow-Origin "*"
   	 Header set Access-Control-Allow-Headers "Origin, X-Requested-With, Content-Type, Accept, Authorization"
-     ProxyPass "http://127.0.0.1:5000/api/"
+         ProxyPass "http://127.0.0.1:5000/api/"
   	 ProxyPassReverse "http://127.0.0.1:5000/api/"
-</Location>`
+</Location>
+```
 
 logs
 
