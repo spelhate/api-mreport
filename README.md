@@ -1,6 +1,12 @@
 # api-mreport
 flask api for mreport
 
+Prerequis
+----------
+
+ $ sudo apt-get install python3-venv
+
+
 Install
 ---------
 
