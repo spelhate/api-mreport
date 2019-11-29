@@ -4,13 +4,19 @@ flask api for mreport
 Prerequis
 ----------
 
- $ sudo apt-get install python3-venv
+    $ sudo apt-get install python3-venv
+ 
+ Create api user
+ ---------------
+ 
+    $ sudo adduser mreport
 
 
 Install
 ---------
 
     # clone the repository
+    $ cd /home/mreport
     $ git clone https://github.com/spelhate/api-mreport.git
     $ cd api-mreport
 
@@ -58,7 +64,7 @@ In apache conf
 logs
 
     $ mkdir /var/log/api-mreport
-    $ sudo chown myuser /var/log/api-mreport
+    $ sudo chown mreport /var/log/api-mreport
 
 
 
@@ -75,10 +81,10 @@ Description=api-mreport
 After=network.target
 
 [Service]
-User=customuser
+User=mreport
 Restart=on-failure
-WorkingDirectory=/home/customuser/api-mreport/
-ExecStart=/home/customuser/api-mreport/venv/bin/gunicorn -c /home/customuser/api-mreport/gunicorn.conf -b 0.0.0.0:5000 app:app
+WorkingDirectory=/home/mreport/api-mreport/
+ExecStart=/home/mreport/api-mreport/venv/bin/gunicorn -c /home/mreport/api-mreport/gunicorn.conf -b 0.0.0.0:5000 app:app
 
 [Install]
 WantedBy=multi-user.target
