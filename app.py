@@ -69,7 +69,15 @@ class GetReports(Resource):
     def get(self):
         engine = create_engine(app.config['SQLALCHEMY_DATABASE_URI'])
         connection = engine.connect()
-        result = connection.execute("select id, count(datavizid)as dataviz_nb from data.reports group by id")
+        sql = text("""
+            select data.reports_lst.title,
+                data.reports.id,
+                count(datavizid) as nb
+            from data.reports_lst, data.reports
+            where data.reports_lst.reportid = data.reports.id
+            group by 1,2;
+            """)
+        result = connection.execute(sql)
         return jsonify({'reports': json.loads(json.dumps([dict(r) for r in result]))})
         connection.close()
 
@@ -81,20 +89,18 @@ class GetReport(Resource):
         connection = engine.connect()
         sql = text("""
             select
-                data.rawdata.dataviz as dataviz,
-                data.rawdata.dataid as dataid,
-                data.rawdata.dataset as dataset,
-                data.rawdata.order as "order",
-                data.rawdata.label as label,
-                data.rawdata.data as data
-        from data.rawdata, data.reports
+                distinct data.rawdata.dataid as dataid,
+                data.levels.label as label
+        from data.rawdata, data.reports, data.levels
         where
             data.rawdata.dataviz = data.reports.datavizid and
-            data.reports.id = :id;
+            data.rawdata.dataid = data.levels.dataid and
+            data.reports.id = :id order by label asc;
         """)
         sql.bindparams(bindparam("id", type_=String))
         result = connection.execute(sql, {"id": id})
-        return jsonify({'data': json.loads(json.dumps([dict(r) for r in result]))})
+        data = []
+        return jsonify({'items': json.loads(json.dumps([dict(r) for r in result]))})
         connection.close()
 
 @ns.route('/report/<id>/<idgeo>', doc={'description': 'Récupération des données pour rapport ex: test & 200039022'})
@@ -118,7 +124,7 @@ class GetReport(Resource):
         """)
         sql.bindparams(bindparam("id", type_=String), bindparam("idgeo", type_=String))
         result = connection.execute(sql, {"id": id, "idgeo": idgeo})
-        return jsonify({'data': json.loads(json.dumps([dict(r) for r in result]))})
+        return jsonify(json.loads(json.dumps([dict(r) for r in result])))
         connection.close()
 
 
