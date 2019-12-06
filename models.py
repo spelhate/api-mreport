@@ -6,7 +6,7 @@ class Dataviz(db.Model):
     description = db.Column(db.String(250))
     source = db.Column(db.String(200))
     millesime = db.Column(db.String(4))
-    type = db.Column(db.String(200))
+    viz = db.Column(db.String(200))
     niveau = db.Column(db.String(50))
     job = db.Column(db.String(50))
     

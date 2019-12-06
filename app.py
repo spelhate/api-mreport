@@ -70,8 +70,11 @@ class DatavizManagement(Resource):
         else:
             if Dataviz.query.get(id):
                 dvz = Dataviz.query.get(id)
-                titre = data["titre"]
-                dvz.titre = titre
+                for fld in ["titre", "description", "source", "millesime", "viz", "niveau", "job"]:
+                    value = data.get(fld)
+                    if value:
+                        setattr(dvz, fld, value)
+
                 db.session.commit()
                 return {"response": "success" , "data": data}
             else:
