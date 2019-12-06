@@ -1,5 +1,5 @@
 # -*- coding: cp1252 -*-
-from flask import Flask, jsonify
+from flask import Flask, jsonify, request
 from flask_restplus import Api, Resource, fields
 from sqlalchemy import create_engine, bindparam, Integer, String
 from sqlalchemy.sql import text
@@ -27,34 +27,15 @@ app = Flask(__name__)
 app.config.from_object('config')
 app.config['JSON_AS_ASCII'] = False
 db = SQLAlchemy(app)
-
-class Dataviz(db.Model):
-    id = db.Column(db.String(200), primary_key=True)
-    titre = db.Column(db.String(64), index=True, unique=True)
-    description = db.Column(db.String(120), index=True, unique=True)
-    source = db.Column(db.String(128))
-    raws = db.relationship('Data', backref='author', lazy='dynamic')
-
-    def __repr__(self):
-        return '<Dataviz {}>'.format(self.id)
-
-class Data(db.Model):
-    id = db.Column(db.Integer, primary_key=True)
-    dataid = db.Column(db.String(140))
-    label = db.Column(db.String(140))
-    data = db.Column(db.String(140))
-    dataviz_id = db.Column(db.String(200), db.ForeignKey('dataviz.id'))
-
-    def __repr__(self):
-        return '<Data {}>'.format(self.id)
-
+from models import Dataviz
 
 app.wsgi_app = CherrokeeFix(app.wsgi_app, app.config['APP_PREFIX'], app.config['APP_SCHEME'])
 api = Api(app=app, version='0.1', title='MReport Api', description='Test API', validate=True)
 
-ns = api.namespace('store', description='Store de dataviz')
+store = api.namespace('store', description='Store de dataviz')
+report = api.namespace('report', description='Reports')
 
-@ns.route('/catalog')
+@store.route('/')
 class GetCatalog(Resource):
     def get(self):
         engine = create_engine(app.config['SQLALCHEMY_DATABASE_URI'])
@@ -64,7 +45,49 @@ class GetCatalog(Resource):
         return jsonify(**data)
         connection.close()
 
-@ns.route('/reports')
+@store.route('/<string:id>')
+class DatavizManagement(Resource):
+    def put(self, id):
+        data = request.get_json()
+        if not data:
+            data = {"response": "ERROR"}
+            return data, 404
+        else:
+            if Dataviz.query.get(id):
+                return {"response": "dataviz already exists."}, 403
+            else:
+                dvz = Dataviz(**data)
+                #**data will unpack the dict object, so if have data = {'dataviz': 'test', 'name': 'Awesome'}, Dataviz(**data) will do like Dataviz(dataviz='test', name='Awesome')
+                db.session.add(dvz)
+                db.session.commit()
+                return {"response": "success" , "data": data}
+
+    def post(self, id):
+        data = request.get_json()
+        if not data:
+            data = {"response": "ERROR"}
+            return data, 404
+        else:
+            if Dataviz.query.get(id):
+                dvz = Dataviz.query.get(id)
+                titre = data["titre"]
+                dvz.titre = titre
+                db.session.commit()
+                return {"response": "success" , "data": data}
+            else:
+                return {"response": "dataviz doesn't exists."}, 403
+
+    def delete(self, id):
+        dvz = Dataviz.query.get(id)
+        if dvz:
+            db.session.delete(dvz)
+            db.session.commit()
+            return {"response": "success"}
+        else:
+            return {"response": "dataviz does not exists."}, 403
+
+
+@report.route('/')
 class GetReports(Resource):
     def get(self):
         engine = create_engine(app.config['SQLALCHEMY_DATABASE_URI'])
@@ -81,8 +104,8 @@ class GetReports(Resource):
         return jsonify({'reports': json.loads(json.dumps([dict(r) for r in result]))})
         connection.close()
 
-@ns.route('/report/<id>', doc={'description': 'Récupération d\'un rapport ex: test'})
-@ns.doc(params={'id': 'identifiant du rapport'})
+@report.route('/<id>', doc={'description': 'Récupération d\'un rapport ex: test'})
+@report.doc(params={'id': 'identifiant du rapport'})
 class GetReport(Resource):
     def get(self,id):
         engine = create_engine(app.config['SQLALCHEMY_DATABASE_URI'])
@@ -103,8 +126,8 @@ class GetReport(Resource):
         return jsonify({'items': json.loads(json.dumps([dict(r) for r in result]))})
         connection.close()
 
-@ns.route('/report/<id>/<idgeo>', doc={'description': 'Récupération des données pour rapport ex: test & 200039022'})
-@ns.doc(params={'id': 'identifiant du rapport', 'idgeo': 'id géographique'})
+@report.route('/<id>/<idgeo>', doc={'description': 'Récupération des données pour rapport ex: test & 200039022'})
+@report.doc(params={'id': 'identifiant du rapport', 'idgeo': 'id géographique'})
 class GetReport(Resource):
     def get(self, id, idgeo):
         engine = create_engine(app.config['SQLALCHEMY_DATABASE_URI'])
