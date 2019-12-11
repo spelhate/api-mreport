@@ -55,9 +55,9 @@ In apache conf
 ```
 <Location "/api">
 	 Header set Access-Control-Allow-Origin "*"
-  	 Header set Access-Control-Allow-Headers "Origin, X-Requested-With, Content-Type, Accept, Authorization"
+	 Header set Access-Control-Allow-Headers "Origin, X-Requested-With, Content-Type, Accept, Authorization"
          ProxyPass "http://127.0.0.1:5000/api/"
-  	 ProxyPassReverse "http://127.0.0.1:5000/api/"
+	 ProxyPassReverse "http://127.0.0.1:5000/api/"
 </Location>
 ```
 
