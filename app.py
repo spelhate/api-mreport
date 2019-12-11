@@ -2,6 +2,7 @@
 from flask import Flask, jsonify, request
 from flask_restplus import Api, Resource, fields
 from sqlalchemy import create_engine, bindparam, Integer, String
+#from sqlalchemy.schema import PrimaryKeyConstraint
 from sqlalchemy.sql import text
 from flask_sqlalchemy import SQLAlchemy
 import json
@@ -70,7 +71,7 @@ class DatavizManagement(Resource):
         else:
             if Dataviz.query.get(id):
                 dvz = Dataviz.query.get(id)
-                for fld in ["titre", "description", "source", "millesime", "viz", "niveau", "job"]:
+                for fld in ["title", "description", "source", "year", "type", "level", "unit", "job"]:
                     value = data.get(fld)
                     if value:
                         setattr(dvz, fld, value)
@@ -96,11 +97,11 @@ class GetReports(Resource):
         engine = create_engine(app.config['SQLALCHEMY_DATABASE_URI'])
         connection = engine.connect()
         sql = text("""
-            select data.reports_lst.title,
-                data.reports.id,
-                count(datavizid) as nb
-            from data.reports_lst, data.reports
-            where data.reports_lst.reportid = data.reports.id
+            select data.report.title,
+                data.report.report,
+                count(dataviz) as nb
+            from data.report, data.report_composition
+            where data.report.report = data.report_composition.report
             group by 1,2;
             """)
         result = connection.execute(sql)

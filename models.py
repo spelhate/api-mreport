@@ -10,8 +10,8 @@ class Dataviz(db.Model):
     type = db.Column(db.String(200),nullable=False)
     level = db.Column(db.String(50),nullable=False)
     job = db.Column(db.String(50))
-    
-    ##__table_args__ = {'schema': 'data'}
+
+    __table_args__ = ({'schema': 'data'})
     def __repr__(self):
         return '<Dataviz {}>'.format(self.dataviz)
 class Rawdata(db.Model):
@@ -22,8 +22,8 @@ class Rawdata(db.Model):
     label = db.Column(db.String(250))
     data = db.Column(db.String(250))
     __table_args__ = (
-        PrimaryKeyConstraint('dataviz', 'dataid', 'dataset', 'order'),
-        {},
+        db.PrimaryKeyConstraint('dataviz', 'dataid', 'dataset', 'order'),
+        {'schema': 'data'}
     )
     def __repr__(self):
         return '<Rawdata {}>'.format(self.dataviz)
@@ -31,6 +31,7 @@ class Rawdata(db.Model):
 class Report(db.Model):
     report = db.Column(db.String(50),primary_key=True)
     title = db.Column(db.String(250),nullable=False)
+    __table_args__ = ({'schema': 'data'})
     def __repr__(self):
         return '<Report {}>'.format(self.report)
 
@@ -38,8 +39,8 @@ class Report_composition(db.Model):
     report = db.Column(db.String(50),db.ForeignKey('report.report'),nullable=False)
     dataviz = db.Column(db.String(50),db.ForeignKey('dataviz.dataviz'),nullable=False)
     __table_args__ = (
-        PrimaryKeyConstraint('report', 'dataviz'),
-        {},
+        db.PrimaryKeyConstraint('report', 'dataviz'),
+        {'schema': 'data'}
     )
     def __repr__(self):
         return '<Report_composition {}>'.format(self.report)
