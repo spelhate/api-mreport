@@ -1,11 +1,14 @@
 # -*- coding: cp1252 -*-
 from flask import Flask, jsonify, request
 from flask_restplus import Api, Resource, fields
-from sqlalchemy import create_engine, bindparam, Integer, String
+from sqlalchemy import create_engine, bindparam, Integer, String, event
 #from sqlalchemy.schema import PrimaryKeyConstraint
 from sqlalchemy.sql import text
 from flask_sqlalchemy import SQLAlchemy
 import json
+from sqlalchemy.schema import CreateSchema, DropSchema
+
+
 
 
 class CherrokeeFix(object):
@@ -27,7 +30,10 @@ class CherrokeeFix(object):
 app = Flask(__name__)
 app.config.from_object('config')
 app.config['JSON_AS_ASCII'] = False
+schema = app.config['SCHEMA']+"."
 db = SQLAlchemy(app)
+event.listen(db.metadata, 'before_create', CreateSchema(schema))
+event.listen(db.metadata, 'after_drop', DropSchema(schema))
 from models import Dataviz
 
 app.wsgi_app = CherrokeeFix(app.wsgi_app, app.config['APP_PREFIX'], app.config['APP_SCHEME'])
@@ -41,7 +47,7 @@ class GetCatalog(Resource):
     def get(self):
         engine = create_engine(app.config['SQLALCHEMY_DATABASE_URI'])
         connection = engine.connect()
-        result = connection.execute("select * from data.dataviz")
+        result = connection.execute("select * from "+schema+"dataviz")
         data = {'catalog': json.loads(json.dumps([dict(r) for r in result]))}
         return jsonify(**data)
         connection.close()
@@ -97,18 +103,18 @@ class GetReports(Resource):
         engine = create_engine(app.config['SQLALCHEMY_DATABASE_URI'])
         connection = engine.connect()
         sql = text("""
-            select data.report.title,
-                data.report.report,
+            select """+schema+"""report.title,
+                """+schema+"""report.report,
                 count(dataviz) as nb
-            from data.report, data.report_composition
-            where data.report.report = data.report_composition.report
+            from """+schema+"""report, """+schema+"""report_composition
+            where """+schema+"""report.report = """+schema+"""report_composition.report
             group by 1,2;
             """)
         result = connection.execute(sql)
         return jsonify({'reports': json.loads(json.dumps([dict(r) for r in result]))})
         connection.close()
 
-@report.route('/<id>', doc={'description': 'Récupération d\'un rapport ex: test'})
+@report.route('/<id>', doc={'description': 'Rï¿½cupï¿½ration d\'un rapport ex: test'})
 @report.doc(params={'id': 'identifiant du rapport'})
 class GetReport(Resource):
     def get(self,id):
@@ -116,13 +122,13 @@ class GetReport(Resource):
         connection = engine.connect()
         sql = text("""
             select
-                distinct data.rawdata.dataid as dataid,
-                data.levels.label as label
-        from data.rawdata, data.reports, data.levels
+                distinct """+schema+"""rawdata.dataid as dataid,
+                """+schema+"""dataid.label as label
+        from """+schema+"""rawdata, """+schema+"""report_composition, """+schema+"""dataid
         where
-            data.rawdata.dataviz = data.reports.datavizid and
-            data.rawdata.dataid = data.levels.dataid and
-            data.reports.id = :id order by label asc;
+            """+schema+"""rawdata.dataviz = """+schema+"""report_composition.dataviz and
+            """+schema+"""rawdata.dataid = """+schema+"""dataid.dataid and
+            """+schema+"""report_composition.report = :id order by label asc;
         """)
         sql.bindparams(bindparam("id", type_=String))
         result = connection.execute(sql, {"id": id})
@@ -130,24 +136,24 @@ class GetReport(Resource):
         return jsonify({'items': json.loads(json.dumps([dict(r) for r in result]))})
         connection.close()
 
-@report.route('/<id>/<idgeo>', doc={'description': 'Récupération des données pour rapport ex: test & 200039022'})
-@report.doc(params={'id': 'identifiant du rapport', 'idgeo': 'id géographique'})
+@report.route('/<id>/<idgeo>', doc={'description': 'Rï¿½cupï¿½ration des donnï¿½es pour rapport ex: test & 200039022'})
+@report.doc(params={'id': 'identifiant du rapport', 'idgeo': 'id gï¿½ographique'})
 class GetReport(Resource):
     def get(self, id, idgeo):
         engine = create_engine(app.config['SQLALCHEMY_DATABASE_URI'])
         connection = engine.connect()
         sql = text("""
             select
-                data.rawdata.dataviz as dataviz,
-                data.rawdata.dataid as dataid,
-                data.rawdata.dataset as dataset,
-                data.rawdata.order as "order",
-                data.rawdata.label as label,
-                data.rawdata.data as data
-        from data.rawdata, data.reports
+                """+schema+"""rawdata.dataviz as dataviz,
+                """+schema+"""rawdata.dataid as dataid,
+                """+schema+"""rawdata.dataset as dataset,
+                """+schema+"""rawdata.order as "order",
+                """+schema+"""rawdata.label as label,
+                """+schema+"""rawdata.data as data
+        from """+schema+"""rawdata, """+schema+"""report
         where
-            data.rawdata.dataviz = data.reports.datavizid and
-            data.reports.id = :id and data.rawdata.dataid = :idgeo;
+            """+schema+"""rawdata.dataviz = """+schema+"""report_composition.dataviz and
+            """+schema+"""report.report = :id and """+schema+"""rawdata.dataid = :idgeo;
         """)
         sql.bindparams(bindparam("id", type_=String), bindparam("idgeo", type_=String))
         result = connection.execute(sql, {"id": id, "idgeo": idgeo})
