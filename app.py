@@ -1,16 +1,21 @@
 # -*- coding: cp1252 -*-
 from flask import Flask, jsonify, request
 from flask_restplus import Api, Resource, fields
-from sqlalchemy import create_engine, bindparam, Integer, String, event
+from sqlalchemy import create_engine, bindparam, Integer, String, event, func
 #from sqlalchemy.schema import PrimaryKeyConstraint
 from sqlalchemy.sql import text
 from flask_sqlalchemy import SQLAlchemy
 import json
 from sqlalchemy.schema import CreateSchema, DropSchema
 
-
-
-
+def row2dict(row):
+    d = {}
+    if(row.__table__.columns):
+        for column in row.__table__.columns:
+            d[column.name] = str(getattr(row, column.name))
+    else:
+        print("NB")
+    return d
 class CherrokeeFix(object):
 
     def __init__(self, app, script_name, scheme):
@@ -34,7 +39,8 @@ schema = app.config['SCHEMA']+"."
 db = SQLAlchemy(app)
 event.listen(db.metadata, 'before_create', CreateSchema(app.config['SCHEMA']))
 event.listen(db.metadata, 'after_drop', DropSchema(app.config['SCHEMA']))
-from models import Dataviz
+from models import *
+
 
 app.wsgi_app = CherrokeeFix(app.wsgi_app, app.config['APP_PREFIX'], app.config['APP_SCHEME'])
 api = Api(app=app, version='0.1', title='MReport Api', description='Test API', validate=True)
@@ -45,12 +51,10 @@ report = api.namespace('report', description='Reports')
 @store.route('/')
 class GetCatalog(Resource):
     def get(self):
-        engine = create_engine(app.config['SQLALCHEMY_DATABASE_URI'])
-        connection = engine.connect()
-        result = connection.execute("select * from "+schema+"dataviz")
-        data = {'catalog': json.loads(json.dumps([dict(r) for r in result]))}
+        result = db.session.query(Dataviz)
+        data = {'reports': json.loads(json.dumps([row2dict(r) for r in result]))}
         return jsonify(**data)
-        connection.close()
+
 
 @store.route('/<string:id>')
 class DatavizManagement(Resource):
@@ -102,13 +106,15 @@ class GetReports(Resource):
     def get(self):
         engine = create_engine(app.config['SQLALCHEMY_DATABASE_URI'])
         connection = engine.connect()
+        result1 = db.session.query(Report,func.count()).join(Report_composition,Report.report == Report_composition.report).group_by(Report.report).all()
+        print({'reports': json.loads(json.dumps([row2dict(r) for r in result1]))})
         sql = text("""
             select """+schema+"""report.title,
                 """+schema+"""report.report,
                 count(dataviz) as nb
             from """+schema+"""report, """+schema+"""report_composition
             where """+schema+"""report.report = """+schema+"""report_composition.report
-            group by 1,2;
+            group by """+schema+"""report.report;
             """)
         result = connection.execute(sql)
         return jsonify({'reports': json.loads(json.dumps([dict(r) for r in result]))})
