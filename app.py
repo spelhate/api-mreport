@@ -32,8 +32,8 @@ app.config.from_object('config')
 app.config['JSON_AS_ASCII'] = False
 schema = app.config['SCHEMA']+"."
 db = SQLAlchemy(app)
-event.listen(db.metadata, 'before_create', CreateSchema(schema))
-event.listen(db.metadata, 'after_drop', DropSchema(schema))
+event.listen(db.metadata, 'before_create', CreateSchema(app.config['SCHEMA']))
+event.listen(db.metadata, 'after_drop', DropSchema(app.config['SCHEMA']))
 from models import Dataviz
 
 app.wsgi_app = CherrokeeFix(app.wsgi_app, app.config['APP_PREFIX'], app.config['APP_SCHEME'])
