@@ -49,10 +49,13 @@ class CherrokeeFix(object):
 app = Flask(__name__)
 app.config.from_object('config')
 app.config['JSON_AS_ASCII'] = False
-schema = app.config['SCHEMA']+"."
 db = SQLAlchemy(app)
-event.listen(db.metadata, 'before_create', CreateSchema(app.config['SCHEMA']))
-event.listen(db.metadata, 'after_drop', DropSchema(app.config['SCHEMA']))
+try :
+    schema = app.config['SCHEMA']
+    event.listen(db.metadata, 'before_create', CreateSchema(schema))
+    event.listen(db.metadata, 'after_drop', DropSchema(schema))
+except KeyError :
+    print("If you want to add a schema edit config.py with SCHEMA variable")
 from models import *
 
 
