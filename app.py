@@ -1,4 +1,4 @@
-# -*- coding: cp1252 -*-
+# -*- coding: utf-8 -*-
 from flask import Flask, jsonify, request
 from flask_restplus import Api, Resource, fields
 from sqlalchemy import create_engine, bindparam, Integer, String, event, func, inspect, desc
