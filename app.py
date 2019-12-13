@@ -20,7 +20,7 @@ def row2dict(row,label="null"):
     except NoInspectionAvailable:
         d[label]=row
     return d
-## Use for (select atr1,atr2 ...) ex : {'reports': json.loads(json.dumps(dict_builder(result)))}
+## Use for (select atr1,atr2 ...) ex : {'reports': json.loads(json.dumps(dict_builder(result)))}.
 def dict_builder(result):
     dlist = []
     for r in result:
