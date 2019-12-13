@@ -1,4 +1,4 @@
-# -*- coding: cp1252 -*-
+# -*- coding: utf-8 -*-
 from flask import Flask, jsonify, request
 from flask_restplus import Api, Resource, fields
 from sqlalchemy import create_engine, bindparam, Integer, String, event
@@ -114,7 +114,7 @@ class GetReports(Resource):
         return jsonify({'reports': json.loads(json.dumps([dict(r) for r in result]))})
         connection.close()
 
-@report.route('/<id>', doc={'description': 'R�cup�ration d\'un rapport ex: test'})
+@report.route('/<id>', doc={'description': 'Récupération d\'un rapport ex: test'})
 @report.doc(params={'id': 'identifiant du rapport'})
 class GetReport(Resource):
     def get(self,id):
@@ -136,8 +136,8 @@ class GetReport(Resource):
         return jsonify({'items': json.loads(json.dumps([dict(r) for r in result]))})
         connection.close()
 
-@report.route('/<id>/<idgeo>', doc={'description': 'R�cup�ration des donn�es pour rapport ex: test & 200039022'})
-@report.doc(params={'id': 'identifiant du rapport', 'idgeo': 'id g�ographique'})
+@report.route('/<id>/<idgeo>', doc={'description': 'Récupération des données pour rapport ex: test & 200039022'})
+@report.doc(params={'id': 'identifiant du rapport', 'idgeo': 'id géographique'})
 class GetReport(Resource):
     def get(self, id, idgeo):
         engine = create_engine(app.config['SQLALCHEMY_DATABASE_URI'])
