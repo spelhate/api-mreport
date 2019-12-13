@@ -15,6 +15,16 @@ class Dataviz(db.Model):
     __table_args__ = ({'schema': app.config['SCHEMA']})
     def __repr__(self):
         return '<Dataviz {}>'.format(self.dataviz)
+    def to_json(self):
+        return dict(dataviz=self.dataviz,
+                    title=self.title,
+                    description=self.description,
+                    source=self.source,
+                    year=self.year,
+                    unit=self.unit,
+                    type=self.type,
+                    level=self.level,
+                    job=self.job)
 
 class Dataid(db.Model):
     dataid = db.Column(db.String(50),primary_key=True,index=True)
@@ -24,6 +34,9 @@ class Dataid(db.Model):
     )
     def __repr__(self):
         return '<Dataid {}>'.format(self.dataid)
+    def to_json(self):
+        return dict(dataid=self.dataid,
+                    label=self.label)
 class Rawdata(db.Model):
     dataviz = db.Column(db.String(50),db.ForeignKey(schema+'dataviz.dataviz'),index=True,nullable=False)
     dataid = db.Column(db.String(50),db.ForeignKey(schema+'dataid.dataid'),index=True,nullable=False)
@@ -37,6 +50,13 @@ class Rawdata(db.Model):
     )
     def __repr__(self):
         return '<Rawdata {}>'.format(self.dataviz)
+    def to_json(self):
+        return dict(dataviz=self.dataviz,
+                    dataid=self.dataid,
+                    dataset=self.dataset,
+                    order=self.order,
+                    label=self.label,
+                    data=self.data)
 
 class Report(db.Model):
     report = db.Column(db.String(50),primary_key=True)
@@ -44,6 +64,9 @@ class Report(db.Model):
     __table_args__ = ({'schema': app.config['SCHEMA']})
     def __repr__(self):
         return '<Report {}>'.format(self.report)
+    def to_json(self):
+        return dict(report=self.report,
+                    title=self.title)
 
 class Report_composition(db.Model):
     report = db.Column(db.String(50),db.ForeignKey(schema+'report.report'),nullable=False)
@@ -54,4 +77,7 @@ class Report_composition(db.Model):
     )
     def __repr__(self):
         return '<Report_composition {}>'.format(self.report)
+    def to_json(self):
+        return dict(report=self.report,
+                    dataviz=self.dataviz)
 
