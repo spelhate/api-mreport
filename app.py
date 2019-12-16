@@ -78,8 +78,8 @@ class DatavizManagement(Resource):
     def put(self, id):
         data = request.get_json()
         if not data:
-            data = {"response": "ERROR"}
-            return data, 404
+            data = {"response": "ERROR no data supplied"}
+            return data, 405
         else:
             if Dataviz.query.get(id):
                 return {"response": "dataviz already exists."}, 403
@@ -88,13 +88,13 @@ class DatavizManagement(Resource):
                 #**data will unpack the dict object, so if have data = {'dataviz': 'test', 'name': 'Awesome'}, Dataviz(**data) will do like Dataviz(dataviz='test', name='Awesome')
                 db.session.add(dvz)
                 db.session.commit()
-                return {"response": "success" , "data": data}
+                return {"response": "success" , "data": data, "dataviz":id}
 
     def post(self, id):
         data = request.get_json()
         if not data:
-            data = {"response": "ERROR"}
-            return data, 404
+            data = {"response": "ERROR no data supplied"}
+            return data, 405
         else:
             if Dataviz.query.get(id):
                 dvz = Dataviz.query.get(id)
@@ -104,18 +104,19 @@ class DatavizManagement(Resource):
                         setattr(dvz, fld, value)
 
                 db.session.commit()
-                return {"response": "success" , "data": data}
+                return {"response": "success" , "data": data, "dataviz":id}
             else:
-                return {"response": "dataviz doesn't exists."}, 403
+                return {"response": "dataviz doesn't exists."}, 404
+
 
     def delete(self, id):
         dvz = Dataviz.query.get(id)
         if dvz:
             db.session.delete(dvz)
             db.session.commit()
-            return {"response": "success"}
+            return {"response": "success", "dataviz":id}
         else:
-            return {"response": "dataviz does not exists."}, 403
+            return {"response": "dataviz does not exists."}, 404
 
 
 @report.route('/')
