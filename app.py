@@ -30,6 +30,12 @@ def dict_builder(result):
             d.update(row2dict(res[key],key))
         dlist.append(d)
     return dlist
+def insertdb(schema):
+    fd = open('alimentation.sql', 'r')
+    sqlFile = fd.read()
+    fd.close()
+    sqlFile = sqlFile.replace("schema.",schema)
+    return sqlFile
 class CherrokeeFix(object):
 
     def __init__(self, app, script_name, scheme):
@@ -54,7 +60,9 @@ try :
     schema = app.config['SCHEMA']
     event.listen(db.metadata, 'before_create', CreateSchema(schema))
     event.listen(db.metadata, 'after_drop', DropSchema(schema))
+    event.listen(db.metadata, "after_create", db.DDL(insertdb(schema+".")))
 except KeyError :
+    event.listen(db.metadata, "after_create", db.DDL(insertdb("")))
     print("If you want to add a schema edit config.py with SCHEMA variable")
 from models import *
 
