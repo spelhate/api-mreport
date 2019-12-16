@@ -1,41 +1,14 @@
 # -*- coding: utf-8 -*-
 from flask import Flask, jsonify, request
 from flask_restplus import Api, Resource, fields
-from sqlalchemy import create_engine, bindparam, Integer, String, event, func, inspect, desc
+from sqlalchemy import create_engine, bindparam, Integer, String, event, func,desc
 #from sqlalchemy.schema import PrimaryKeyConstraint
 from sqlalchemy.sql import text
 from flask_sqlalchemy import SQLAlchemy
 import json
 from sqlalchemy.schema import CreateSchema, DropSchema
-from sqlalchemy.exc import NoInspectionAvailable
+from functions_inc import *
 
-## Use for (select *) from a single table ex : {'datavizs': json.loads(json.dumps([row2dict(r) for r in result]))}
-def row2dict(row,label="null"):
-    d = {}
-    try:
-        inspect(row)
-        if(row.__table__.columns):
-            for column in row.__table__.columns:
-                d[column.name] = str(getattr(row, column.name))
-    except NoInspectionAvailable:
-        d[label]=row
-    return d
-## Use for (select atr1,atr2 ...) ex : {'reports': json.loads(json.dumps(dict_builder(result)))}.
-def dict_builder(result):
-    dlist = []
-    for r in result:
-        d={}
-        res = r._asdict()
-        for key in res:
-            d.update(row2dict(res[key],key))
-        dlist.append(d)
-    return dlist
-def insertdb(file,schema):
-    fd = open(file, 'r')
-    sqlFile = fd.read()
-    fd.close()
-    sqlFile = sqlFile.replace("schema.",schema)
-    return sqlFile
 class CherrokeeFix(object):
 
     def __init__(self, app, script_name, scheme):
