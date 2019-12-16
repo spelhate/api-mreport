@@ -2,8 +2,9 @@ DEBUG = True
 APP_PREFIX = '/api'
 APP_SCHEME = 'http'
 SQLALCHEMY_DATABASE_URI = 'postgresql://<USER>:<PASSWORD>@<HOST>:<PORT>/<DB>'
+##SQLALCHEMY_DATABASE_URI = 'sqlite:///data.db'
 SQLALCHEMY_TRACK_MODIFICATIONS = False
-SCHEMA = "test" ## Delete if you don't need schema
+SCHEMA = "data" ## Comment this line if you don't need schema or if you use SQLite
 
 
 

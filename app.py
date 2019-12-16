@@ -1,35 +1,14 @@
 # -*- coding: utf-8 -*-
 from flask import Flask, jsonify, request
 from flask_restplus import Api, Resource, fields
-from sqlalchemy import create_engine, bindparam, Integer, String, event, func, inspect, desc
+from sqlalchemy import create_engine, bindparam, Integer, String, event, func,desc
 #from sqlalchemy.schema import PrimaryKeyConstraint
 from sqlalchemy.sql import text
 from flask_sqlalchemy import SQLAlchemy
 import json
 from sqlalchemy.schema import CreateSchema, DropSchema
-from sqlalchemy.exc import NoInspectionAvailable
+from functions_inc import *
 
-## Use for (select *) from a single table ex : {'datavizs': json.loads(json.dumps([row2dict(r) for r in result]))}
-def row2dict(row,label="null"):
-    d = {}
-    try:
-        inspect(row)
-        if(row.__table__.columns):
-            for column in row.__table__.columns:
-                d[column.name] = str(getattr(row, column.name))
-    except NoInspectionAvailable:
-        d[label]=row
-    return d
-## Use for (select atr1,atr2 ...) ex : {'reports': json.loads(json.dumps(dict_builder(result)))}.
-def dict_builder(result):
-    dlist = []
-    for r in result:
-        d={}
-        res = r._asdict()
-        for key in res:
-            d.update(row2dict(res[key],key))
-        dlist.append(d)
-    return dlist
 class CherrokeeFix(object):
 
     def __init__(self, app, script_name, scheme):
@@ -54,7 +33,13 @@ try :
     schema = app.config['SCHEMA']
     event.listen(db.metadata, 'before_create', CreateSchema(schema))
     event.listen(db.metadata, 'after_drop', DropSchema(schema))
+    event.listen(db.metadata, "after_create", db.DDL(insertdb("Datainit/alimentation.sql",schema+".")))
 except KeyError :
+    event.listen(db.metadata, "after_create", db.DDL(insertdb("Datainit/dataid.sql","")))
+    event.listen(db.metadata, "after_create", db.DDL(insertdb("Datainit/report.sql","")))
+    event.listen(db.metadata, "after_create", db.DDL(insertdb("Datainit/dataviz.sql","")))
+    event.listen(db.metadata, "after_create", db.DDL(insertdb("Datainit/report_composition.sql","")))
+    event.listen(db.metadata, "after_create", db.DDL(insertdb("Datainit/rawdata.sql","")))
     print("If you want to add a schema edit config.py with SCHEMA variable")
 from models import *
 
@@ -64,6 +49,7 @@ api = Api(app=app, version='0.1', title='MReport Api', description='Test API', v
 
 store = api.namespace('store', description='Store de dataviz')
 report = api.namespace('report', description='Reports')
+report_composition = api.namespace('report_composition', description='Composition des rapports')
 
 @store.route('/')
 class GetCatalog(Resource):
@@ -132,6 +118,9 @@ class GetReports(Resource):
         data = {'reports': json.loads(json.dumps(dict_builder(result)))}
         return jsonify(**data)
 
+report_fields = api.model('Report', {
+    'title': fields.String,
+})
 @report.route('/<id>', doc={'description': 'Récupération d\'un rapport ex: test'})
 @report.doc(params={'id': 'identifiant du rapport'})
 class GetReport(Resource):
@@ -148,6 +137,46 @@ class GetReport(Resource):
         '''
         data = {'items': json.loads(json.dumps(dict_builder(result)))}
         return jsonify(**data)
+    @report.expect(report_fields)
+    def put(self,id):
+        data = request.get_json()
+        if not data:
+            data = {"response": "ERROR no data supplied"}
+            return data, 405
+        else:
+            if Report.query.get(id):
+                return {"response": "report already exists."}, 403
+            else:
+                data.update({"report":id})
+                rep = Report(**data)
+                db.session.add(rep)
+                db.session.commit()
+                return {"response": "success" , "data": data, "report":id}
+    @report.expect(report_fields)
+    def post(self, id):
+        data = request.get_json()
+        if not data:
+            data = {"response": "ERROR no data supplied"}
+            return data, 405
+        else:
+            if Report.query.get(id):
+                rep = Report.query.get(id)
+                for fld in ["title"]:
+                    value = data.get(fld)
+                    if value:
+                        setattr(rep, fld, value)
+                db.session.commit()
+                return {"response": "success" , "data": data, "report":id}
+            else:
+                return {"response": "report doesn't exists."}, 404
+    def delete(self, id):
+        rep = Report.query.get(id)
+        if rep:
+            db.session.delete(rep)
+            db.session.commit()
+            return {"response": "success", "report":id}
+        else:
+            return {"response": "report does not exists."}, 404
 
 @report.route('/<id>/<idgeo>', doc={'description': 'Récupération des données pour rapport ex: test & 200039022'})
 @report.doc(params={'id': 'identifiant du rapport', 'idgeo': 'id géographique'})
@@ -163,5 +192,61 @@ class GetReport(Resource):
         '''
         data = {'geo': json.loads(json.dumps([row2dict(r) for r in result]))}
         return jsonify(**data)
+report_composition_fields = api.model('Report_composition', {
+    'dataviz': fields.String
+})
+@report_composition.route('/<id>', doc={'description': 'Composition d\'un rapport'})
+@report_composition.doc(params={'id': 'identifiant du rapport'})
+class GetReportComposition(Resource):
+    @report.expect([report_composition_fields])
+    def put(self,id):
+        data = request.get_json()
+        if not data:
+            data = {"response": "ERROR no data supplied"}
+            return data, 405
+        else:
+            if not Report.query.get(id):
+                return {"response": "report does not exists."}, 404
+            else:
+                dtv_list = []
+                for dvz in data :
+                    if not Dataviz.query.get(dvz["dataviz"]):
+                        data = {"response": "ERROR dataviz \'"+dvz["dataviz"]+"\' does not exist"}
+                        return data, 404
+                    if Report_composition.query.filter_by(report=id,dataviz=dvz["dataviz"]).first():
+                        data = {"response": "ERROR the report is already associated with \'"+dvz["dataviz"]+"\'"}
+                        return data, 406
+                    dvz.update({"report":id})
+                    rep_comp = Report_composition(**dvz)
+                    dtv_list.append(rep_comp)
+                for rep_c in dtv_list :
+                    db.session.add(rep_c)
+                    db.session.commit()
+                return {"response": "success" , "data": data, "report":id}
+    @report.expect([report_composition_fields])
+    def delete(self,id):
+        data = request.get_json()
+        if not data:
+            data = {"response": "ERROR no data supplied"}
+            return data, 405
+        else:
+            if not Report.query.get(id):
+                return {"response": "report does not exists."}, 404
+            else:
+                dtv_list = []
+                for dvz in data :
+                    
+                    if not Dataviz.query.get(dvz["dataviz"]):
+                        data = {"response": "ERROR dataviz \'"+dvz["dataviz"]+"\' does not exist"}
+                        return data, 404
+                    rep_comp = Report_composition.query.filter_by(report=id,dataviz=dvz["dataviz"]).first()
+                    if not rep_comp:
+                        data = {"response": "ERROR the report is not associated with \'"+dvz["dataviz"]+"\'"}
+                        return data, 406
+                    dtv_list.append(rep_comp)
+                for rep_c in dtv_list :
+                    db.session.delete(rep_c)
+                    db.session.commit()
+                return {"response": "success" , "data": data, "report":id}
 if __name__ == "__main__":
     app.run(host='127.0.0.1')

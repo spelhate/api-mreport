@@ -6,7 +6,7 @@ try :
     tableschema={'schema': schema}
     schema = schema+'.'
 except KeyError :
-    print("")
+    pass
     
     
 class Dataviz(db.Model):
@@ -19,7 +19,8 @@ class Dataviz(db.Model):
     type = db.Column(db.String(200),nullable=False)
     level = db.Column(db.String(50),nullable=False)
     job = db.Column(db.String(50))
-
+    report_composition_dvz = db.relationship('Report_composition', backref="report1", cascade="all, delete-orphan" , lazy='dynamic')
+    rawdata_dvz = db.relationship('Rawdata', backref="rawdata1", cascade="all, delete-orphan", lazy='dynamic')
 
     __table_args__ = (tableschema)
     def __repr__(self):
@@ -28,6 +29,7 @@ class Dataviz(db.Model):
 class Dataid(db.Model):
     dataid = db.Column(db.String(50),primary_key=True,index=True)
     label = db.Column(db.String(250),nullable=False)
+    rawdata_dataid = db.relationship('Rawdata', backref="rawdata2", cascade="all, delete-orphan", lazy='dynamic')
     __table_args__ = (
         tableschema
     )
@@ -51,6 +53,7 @@ class Rawdata(db.Model):
 class Report(db.Model):
     report = db.Column(db.String(50),primary_key=True)
     title = db.Column(db.String(250),nullable=False)
+    report_composition_rep = db.relationship('Report_composition', backref="report2", cascade="all, delete-orphan" , lazy='dynamic')
     __table_args__ = (tableschema)
     def __repr__(self):
         return '<Report {}>'.format(self.report)
