@@ -1,26 +1,3 @@
-insert into schema.Dataid (dataid, label) values
-('ec_123', 'Ecluse de la malouinière');
-
-insert into schema.report (report, title) values
-('rep_1', 'Rapport sur les écluses');
-
-insert into schema.dataviz (dataviz, title, description, source, year, "type", level) values
-('ecl_passage_horaire', 'passage par plage horaire','Exemple de graphique','Région Bretagne', '2019', 'Histogramme', 'Ecluse'),
-('ecl_descriptif', 'Descriptif de l''écluse','Exemple de texte','Région Bretagne', '2019', 'Texte', 'Ecluse'),
-('ecl_passage_mensuel', 'passage par mois','Exemple de tableau','Région Bretagne', '2019', 'Tableau', 'Ecluse'),
-('ecl_total_bateaux', 'passage par an','Exemple de chiffre clé','Région Bretagne', '2019', 'Chiffre clé', 'Ecluse'),
-('ecl_map', 'Carte du mobilier','Exemple de carte','Région Bretagne', '2019', 'Carte', 'Ecluse'),
-('ecl_photo', 'Photo de l''écluse','Exemple d''image','Région Bretagne', '2019', 'Image', 'Ecluse');
-
-
-insert into schema.report_composition (report, dataviz) values
-('rep_1', 'ecl_passage_horaire'),
-('rep_1', 'ecl_descriptif'),
-('rep_1', 'ecl_passage_mensuel'),
-('rep_1', 'ecl_total_bateaux'),
-('rep_1', 'ecl_map'),
-('rep_1', 'ecl_photo');
-
 insert into schema.rawdata (dataviz, dataid, dataset, "order", label, data) values
 ('ecl_passage_horaire','ec_123','passage',1,'9h-10h','28'),
 ('ecl_passage_horaire','ec_123','passage',2,'10h-11h','72'),
@@ -44,7 +21,3 @@ insert into schema.rawdata (dataviz, dataid, dataset, "order", label, data) valu
 ('ecl_map', 'ec_123', 'mobilier', 1,	'Table a', 'POINT(-1.5, 48.2)'),
 ('ecl_map', 'ec_123', 'mobilier', 2,	'Tableau b', 'POINT(-1.55, 48.25)'),
 ('ecl_photo', 'ec_123',	'image', 1, 'Image de l''écluse','http://kartenn.region-bretagne.fr/img/vn/ecluse/ECL_IR33.jpg');
-
-
-
-

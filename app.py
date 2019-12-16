@@ -30,8 +30,8 @@ def dict_builder(result):
             d.update(row2dict(res[key],key))
         dlist.append(d)
     return dlist
-def insertdb(schema):
-    fd = open('alimentation.sql', 'r')
+def insertdb(file,schema):
+    fd = open(file, 'r')
     sqlFile = fd.read()
     fd.close()
     sqlFile = sqlFile.replace("schema.",schema)
@@ -60,9 +60,13 @@ try :
     schema = app.config['SCHEMA']
     event.listen(db.metadata, 'before_create', CreateSchema(schema))
     event.listen(db.metadata, 'after_drop', DropSchema(schema))
-    event.listen(db.metadata, "after_create", db.DDL(insertdb(schema+".")))
+    event.listen(db.metadata, "after_create", db.DDL(insertdb("Datainit/alimentation.sql",schema+".")))
 except KeyError :
-    event.listen(db.metadata, "after_create", db.DDL(insertdb("")))
+    event.listen(db.metadata, "after_create", db.DDL(insertdb("Datainit/dataid.sql","")))
+    event.listen(db.metadata, "after_create", db.DDL(insertdb("Datainit/report.sql","")))
+    event.listen(db.metadata, "after_create", db.DDL(insertdb("Datainit/dataviz.sql","")))
+    event.listen(db.metadata, "after_create", db.DDL(insertdb("Datainit/report_composition.sql","")))
+    event.listen(db.metadata, "after_create", db.DDL(insertdb("Datainit/rawdata.sql","")))
     print("If you want to add a schema edit config.py with SCHEMA variable")
 from models import *
 
