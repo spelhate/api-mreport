@@ -91,12 +91,17 @@ class DatavizManagement(Resource):
             if Dataviz.query.get(dataviz_id):
                 return {"response": "dataviz already exists."}, 403
             else:
+                print("Avant "+str(data))
                 data.update({'dataviz':dataviz_id})
-                dvz = Dataviz(**data)
+                print("Après "+str(data))
+                try:
+                    dvz = Dataviz(**data)
+                except TypeError as err:
+                    return {"response": str(err)}, 400
                 #**data will unpack the dict object, so if have data = {'dataviz': 'test', 'name': 'Awesome'}, Dataviz(**data) will do like Dataviz(dataviz='test', name='Awesome')
                 db.session.add(dvz)
                 db.session.commit()
-                return {"response": "success" , "data": data, "dataviz":dataviz_id}
+                return {"response": "success" , "data": data}
     @store.expect(dataviz_post)
     def post(self, dataviz_id):
         data = request.get_json()
@@ -172,7 +177,10 @@ class GetReport(Resource):
                 return {"response": "report already exists."}, 403
             else:
                 data.update({"report":report_id})
-                rep = Report(**data)
+                try:
+                    rep = Report(**data)
+                except TypeError as err:
+                    return {"response": str(err)}, 400
                 db.session.add(rep)
                 db.session.commit()
                 return {"response": "success" , "data": data, "report":report_id}
@@ -241,12 +249,15 @@ class GetReportComposition(Resource):
                         data = {"response": "ERROR the report is already associated with \'"+dvz["dataviz"]+"\'"}
                         return data, 406
                     dvz.update({"report":report_id})
-                    rep_comp = Report_composition(**dvz)
+                    try:
+                        rep_comp = Report_composition(**dvz)
+                    except TypeError as err:
+                        return {"response": str(err)}, 400
                     dtv_list.append(rep_comp)
                 for rep_c in dtv_list :
                     db.session.add(rep_c)
                     db.session.commit()
-                return {"response": "success" , "data": data, "report":report_id}
+                return {"response": "success" , "data": data}
     @report.expect([report_composition_fields])
     def delete(self,report_id):
         data = request.get_json()
@@ -266,7 +277,7 @@ class GetReportComposition(Resource):
                     rep_comp = Report_composition.query.filter_by(report=report_id,dataviz=dvz["dataviz"]).first()
                     if not rep_comp:
                         data = {"response": "ERROR the report is not associated with \'"+dvz["dataviz"]+"\'"}
-                        return data, 406
+                        return data, 405
                     dtv_list.append(rep_comp)
                 for rep_c in dtv_list :
                     db.session.delete(rep_c)
