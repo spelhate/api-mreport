@@ -59,7 +59,7 @@ class GetCatalog(Resource):
         data = {'datavizs': json.loads(json.dumps([row2dict(r) for r in result]))}
         return jsonify(**data)
 
-dataviz_put = api.model('Dataviz_put', {
+dataviz_put = store.model('Dataviz_put', {
     'title': fields.String(max_length=200,required=True),
     'description': fields.String(max_length=250,required=True),
     'source': fields.String(max_length=200,required=True),
@@ -138,7 +138,7 @@ class GetReports(Resource):
         data = dict_builder(result)
         res = defaultdict(list)
         for values in data: res[values['report'],values['title']].append(values['dataviz'])
-        data = {'reports': [{'report':report[0],'title':report[1], 'datviz':dataviz} for report,dataviz in res.items()]}
+        data = {'reports': [{'report':report[0],'title':report[1], 'dataviz':dataviz} for report,dataviz in res.items()]}
         return jsonify(**data)
 
 report_fields = api.model('Report', {
