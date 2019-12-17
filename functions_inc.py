@@ -7,7 +7,10 @@ def row2dict(row,label="null"):
         inspect(row)
         if(row.__table__.columns):
             for column in row.__table__.columns:
-                d[column.name] = str(getattr(row, column.name))
+                nonecheck = str(getattr(row, column.name))
+                if nonecheck == 'None':
+                    nonecheck = ''
+                d[column.name] = nonecheck
     except NoInspectionAvailable:
         d[label]=row
     return d
