@@ -91,6 +91,7 @@ class DatavizManagement(Resource):
             if Dataviz.query.get(dataviz_id):
                 return {"response": "dataviz already exists."}, 403
             else:
+                data.update({'dataviz':dataviz_id})
                 dvz = Dataviz(**data)
                 #**data will unpack the dict object, so if have data = {'dataviz': 'test', 'name': 'Awesome'}, Dataviz(**data) will do like Dataviz(dataviz='test', name='Awesome')
                 db.session.add(dvz)
