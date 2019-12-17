@@ -8,6 +8,7 @@ from flask_sqlalchemy import SQLAlchemy
 import json
 from sqlalchemy.schema import CreateSchema, DropSchema
 from functions_inc import *
+from collections import defaultdict
 
 class CherrokeeFix(object):
 
@@ -108,14 +109,16 @@ class DatavizManagement(Resource):
 @report.route('/')
 class GetReports(Resource):
     def get(self):
-        result = db.session.query(Report,func.count().label('nb')).join(Report_composition,Report.report == Report_composition.report).group_by(Report.report).all()
+        result = db.session.query(Report,Report_composition.dataviz).join(Report_composition,Report.report == Report_composition.report).all()
         '''
-                db.session.query(Report,func.count().label('nb'))
+                db.session.query(Report,Report_composition.dataviz)
                 .join(Report_composition,Report.report == Report_composition.report)
-                .group_by(Report.report)
                 .all()
         '''
-        data = {'reports': json.loads(json.dumps(dict_builder(result)))}
+        data = dict_builder(result)
+        res = defaultdict(list)
+        for values in data: res[values['report'],values['title']].append(values['dataviz'])
+        data = {'reports': [{'report':report[0],'title':report[1], 'datviz':dataviz} for report,dataviz in res.items()]}
         return jsonify(**data)
 
 report_fields = api.model('Report', {
@@ -190,7 +193,7 @@ class GetReport(Resource):
                 .filter(Rawdata.dataid == idgeo)
                 .all()
         '''
-        data = {'geo': json.loads(json.dumps([row2dict(r) for r in result]))}
+        data = {'data': json.loads(json.dumps([row2dict(r) for r in result]))}
         return jsonify(**data)
 report_composition_fields = api.model('Report_composition', {
     'dataviz': fields.String
