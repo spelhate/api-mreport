@@ -53,6 +53,7 @@ Deploy with apache and gunicorn
 In apache conf
 
 ```
+ProxyPreserveHost on
 <Location "/api">
 	 Header set Access-Control-Allow-Origin "*"
 	 Header set Access-Control-Allow-Headers "Origin, X-Requested-With, Content-Type, Accept, Authorization"
