@@ -44,9 +44,8 @@ except KeyError :
     print("If you want to add a schema edit config.py with SCHEMA variable")
 from models import *
 
-
 app.wsgi_app = CherrokeeFix(app.wsgi_app, app.config['APP_PREFIX'], app.config['APP_SCHEME'])
-api = Api(app=app, version='0.1', title='MReport Api', description='Test API', validate=True)
+api = Api(app=app, version='0.1', title='MReport Api', description='Test API', validate=True) #,doc=False
 
 store = api.namespace('store', description='Store de dataviz')
 report = api.namespace('report', description='Reports')
@@ -70,7 +69,7 @@ dataviz_put = store.model('Dataviz_put', {
     'job': fields.String(max_length=50,required=False)
 })
 dataviz_post = api.model('Dataviz_post', {
-    'title': fields.String(max_length=200),
+    'title': fields.String("the title",max_length=200),
     'description': fields.String(max_length=250),
     'source': fields.String(max_length=200),
     'year': fields.String(max_length=4),
@@ -201,7 +200,7 @@ class GetReport(Resource):
                 return {"response": "success" , "data": data, "report":report_id}
             else:
                 return {"response": "report doesn't exists."}, 404
-    def delete(self, id):
+    def delete(self, report_id):
         rep = Report.query.get(report_id)
         if rep:
             db.session.delete(rep)
