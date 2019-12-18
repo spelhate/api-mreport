@@ -128,7 +128,7 @@ class DatavizManagement(Resource):
             db.session.commit()
             return {"response": "success", "dataviz":dataviz_id}
         else:
-            return {"response": "dataviz does not exists."}, 404
+            return {"response": "The dataviz does not exists."}, 404
 
 
 @report.route('/', doc={'description': 'Récupération des rapports avec leurs dataviz associées'})
@@ -207,7 +207,7 @@ class GetReport(Resource):
             db.session.commit()
             return {"response": "success", "report":report_id}
         else:
-            return {"response": "report does not exists."}, 404
+            return {"response": "The report '"+report_id+"' does not exists."}, 404
 
 @report.route('/<report_id>/<dataid_id>', doc={'description': 'Récupération des données pour rapport ex: test & 200039022'})
 @report.doc(params={'report_id': 'identifiant du rapport', 'dataid_id': 'id géographique'})
