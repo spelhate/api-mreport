@@ -1,10 +1,10 @@
 insert into schema.report_composition (report, dataviz) values
-('rep_1', 'ecl_passage_horaire'),
-('rep_1', 'ecl_descriptif'),
-('rep_1', 'ecl_passage_mensuel'),
-('rep_1', 'ecl_total_bateaux'),
-('rep_1', 'ecl_map'),
-('rep_1', 'ecl_photo'),
-('rep_2', 'ecl_descriptif'),
-('rep_2', 'ecl_passage_mensuel'),
-('rep_2', 'ecl_total_bateaux');
+('rapportsurlescluses', 'ecl_passage_horaire'),
+('rapportsurlescluses', 'ecl_descriptif'),
+('rapportsurlescluses', 'ecl_passage_mensuel'),
+('rapportsurlescluses', 'ecl_total_bateaux'),
+('rapportsurlescluses', 'ecl_map'),
+('rapportsurlescluses', 'ecl_photo'),
+('rapportsurlesponeys', 'ecl_descriptif'),
+('rapportsurlesponeys', 'ecl_passage_mensuel'),
+('rapportsurlesponeys', 'ecl_total_bateaux');

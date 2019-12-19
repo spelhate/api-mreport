@@ -12,7 +12,7 @@ except KeyError :
 class Dataviz(db.Model):
     dataviz = db.Column(db.String(50),primary_key=True)
     title = db.Column(db.String(200),nullable=False)
-    description = db.Column(db.String(250),nullable=False)
+    description = db.Column(db.String(250))
     source = db.Column(db.String(200),nullable=False)
     year = db.Column(db.String(4))
     unit = db.Column(db.String(50))

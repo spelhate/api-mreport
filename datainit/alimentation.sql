@@ -2,8 +2,8 @@ insert into schema.dataid (dataid, label) values
 ('ec_123', 'Ecluse de la malouinière');
 
 insert into schema.report (report, title) values
-('rep_1', 'Rapport sur les écluses'),
-('rep_2', 'Rapport sur les poneys');
+('rapportsurlescluses', 'Rapport sur les écluses'),
+('rapportsurlesponeys', 'Rapport sur les poneys');
 
 insert into schema.dataviz (dataviz, title, description, source, year, "type", level) values
 ('ecl_passage_horaire', 'passage par plage horaire','Exemple de graphique','Région Bretagne', '2019', 'Histogramme', 'Ecluse'),
@@ -15,15 +15,15 @@ insert into schema.dataviz (dataviz, title, description, source, year, "type", l
 
 
 insert into schema.report_composition (report, dataviz) values
-('rep_1', 'ecl_passage_horaire'),
-('rep_1', 'ecl_descriptif'),
-('rep_1', 'ecl_passage_mensuel'),
-('rep_1', 'ecl_total_bateaux'),
-('rep_1', 'ecl_map'),
-('rep_1', 'ecl_photo'),
-('rep_2', 'ecl_descriptif'),
-('rep_2', 'ecl_passage_mensuel'),
-('rep_2', 'ecl_total_bateaux');
+('rapportsurlescluses', 'ecl_passage_horaire'),
+('rapportsurlescluses', 'ecl_descriptif'),
+('rapportsurlescluses', 'ecl_passage_mensuel'),
+('rapportsurlescluses', 'ecl_total_bateaux'),
+('rapportsurlescluses', 'ecl_map'),
+('rapportsurlescluses', 'ecl_photo'),
+('rapportsurlesponeys', 'ecl_descriptif'),
+('rapportsurlesponeys', 'ecl_passage_mensuel'),
+('rapportsurlesponeys', 'ecl_total_bateaux');
 
 insert into schema.rawdata (dataviz, dataid, dataset, "order", label, data) values
 ('ecl_passage_horaire','ec_123','passage',1,'9h-10h','28'),

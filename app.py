@@ -44,9 +44,8 @@ except KeyError :
     print("If you want to add a schema edit config.py with SCHEMA variable")
 from models import *
 
-
 app.wsgi_app = CherrokeeFix(app.wsgi_app, app.config['APP_PREFIX'], app.config['APP_SCHEME'])
-api = Api(app=app, version='0.1', title='MReport Api', description='Test API', validate=True)
+api = Api(app=app, version='0.1', title='MReport Api', description='Test API', validate=True) #,doc=False
 
 store = api.namespace('store', description='Store de dataviz')
 report = api.namespace('report', description='Reports')
@@ -70,7 +69,7 @@ dataviz_put = store.model('Dataviz_put', {
     'job': fields.String(max_length=50,required=False)
 })
 dataviz_post = api.model('Dataviz_post', {
-    'title': fields.String(max_length=200),
+    'title': fields.String("the title",max_length=200),
     'description': fields.String(max_length=250),
     'source': fields.String(max_length=200),
     'year': fields.String(max_length=4),
@@ -129,16 +128,16 @@ class DatavizManagement(Resource):
             db.session.commit()
             return {"response": "success", "dataviz":dataviz_id}
         else:
-            return {"response": "dataviz does not exists."}, 404
+            return {"response": "The dataviz does not exists."}, 404
 
 
 @report.route('/', doc={'description': 'Récupération des rapports avec leurs dataviz associées'})
 class GetReports(Resource):
     def get(self):
-        result = db.session.query(Report,Report_composition.dataviz).join(Report_composition,Report.report == Report_composition.report).all()
+        result = db.session.query(Report,Report_composition.dataviz).outerjoin(Report_composition,Report.report == Report_composition.report).all()
         '''
                 db.session.query(Report,Report_composition.dataviz)
-                .join(Report_composition,Report.report == Report_composition.report)
+                .outerjoin(Report_composition,Report.report == Report_composition.report)
                 .all()
         '''
         data = dict_builder(result)
@@ -174,7 +173,7 @@ class GetReport(Resource):
             return data, 405
         else:
             if Report.query.get(report_id):
-                return {"response": "report already exists."}, 403
+                return {"response": "The report already exists."}, 403
             else:
                 data.update({"report":report_id})
                 try:
@@ -201,14 +200,14 @@ class GetReport(Resource):
                 return {"response": "success" , "data": data, "report":report_id}
             else:
                 return {"response": "report doesn't exists."}, 404
-    def delete(self, id):
+    def delete(self, report_id):
         rep = Report.query.get(report_id)
         if rep:
             db.session.delete(rep)
             db.session.commit()
             return {"response": "success", "report":report_id}
         else:
-            return {"response": "report does not exists."}, 404
+            return {"response": "The report '"+report_id+"' does not exists."}, 404
 
 @report.route('/<report_id>/<dataid_id>', doc={'description': 'Récupération des données pour rapport ex: test & 200039022'})
 @report.doc(params={'report_id': 'identifiant du rapport', 'dataid_id': 'id géographique'})
