@@ -134,10 +134,10 @@ class DatavizManagement(Resource):
 @report.route('/', doc={'description': 'Récupération des rapports avec leurs dataviz associées'})
 class GetReports(Resource):
     def get(self):
-        result = db.session.query(Report,Report_composition.dataviz).join(Report_composition,Report.report == Report_composition.report).all()
+        result = db.session.query(Report,Report_composition.dataviz).outerjoin(Report_composition,Report.report == Report_composition.report).all()
         '''
                 db.session.query(Report,Report_composition.dataviz)
-                .join(Report_composition,Report.report == Report_composition.report)
+                .outerjoin(Report_composition,Report.report == Report_composition.report)
                 .all()
         '''
         data = dict_builder(result)
@@ -173,7 +173,7 @@ class GetReport(Resource):
             return data, 405
         else:
             if Report.query.get(report_id):
-                return {"response": "report already exists."}, 403
+                return {"response": "The report already exists."}, 403
             else:
                 data.update({"report":report_id})
                 try:
