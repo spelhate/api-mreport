@@ -209,10 +209,15 @@ class GetReport(Resource):
                 return {"response": "report doesn't exists."}, 404
     def delete(self, report_id):
         rep = Report.query.get(report_id)
+        folder = "/".join([app.config['MREPORT_LOCATION'], "reports", report_id])
         if rep:
-            db.session.delete(rep)
-            db.session.commit()
-            return {"response": "success", "report":report_id}
+            delete_folder = deleteFileSystemStructure(folder)
+            if delete_folder == 'success':
+                db.session.delete(rep)
+                db.session.commit()
+                return {"response": "success", "report":report_id}
+            else:
+                return {"response": delete_folder}
         else:
             return {"response": "The report '"+report_id+"' does not exists."}, 404
 

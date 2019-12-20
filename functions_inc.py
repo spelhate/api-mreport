@@ -45,6 +45,13 @@ def createFileSystemStructure(src, dest):
     except OSError as e:
         return 'Directory not copied. Error: %s' % e
 
+def deleteFileSystemStructure(src):
+    try:
+        shutil.rmtree(src)
+        return 'success'
+    except IOError as e:
+        return "I/O error({0}): {1}".format(e.errno, e.strerror)
+
 def updateReportHTML(src, html):
     try:
         f = open(src, 'w')
