@@ -61,7 +61,7 @@ class GetCatalog(Resource):
 
 dataviz_put = store.model('Dataviz_put', {
     'title': fields.String(max_length=200,required=True),
-    'description': fields.String(max_length=250,required=True),
+    'description': fields.String(max_length=250,required=False),
     'source': fields.String(max_length=200,required=True),
     'year': fields.String(max_length=4,required=False),
     'unit': fields.String(max_length=50,required=False),
