@@ -44,3 +44,12 @@ def createFileSystemStructure(src, dest):
     # Any error saying that the directory doesn't exist
     except OSError as e:
         return 'Directory not copied. Error: %s' % e
+
+def updateReportHTML(src, html):
+    try:
+        f = open(src, 'w')
+        f.write(html)
+        f.close()
+        return 'success'
+    except IOError as e:
+        return "I/O error({0}): {1}".format(e.errno, e.strerror)

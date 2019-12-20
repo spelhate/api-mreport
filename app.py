@@ -50,6 +50,7 @@ api = Api(app=app, version='0.1', title='MReport Api', description='Test API', v
 store = api.namespace('store', description='Store de dataviz')
 report = api.namespace('report', description='Reports')
 report_composition = api.namespace('report_composition', description='Composition des rapports')
+report_html = api.namespace('report_html', description='Structure html des rapports')
 
 @store.route('/',doc={'description':'Récupération des dataviz'})
 class GetCatalog(Resource):
@@ -275,7 +276,7 @@ class GetReportComposition(Resource):
             else:
                 dtv_list = []
                 for dvz in data :
-                    
+
                     if not Dataviz.query.get(dvz["dataviz"]):
                         data = {"response": "ERROR dataviz \'"+dvz["dataviz"]+"\' does not exist"}
                         return data, 404
@@ -288,5 +289,21 @@ class GetReportComposition(Resource):
                     db.session.delete(rep_c)
                     db.session.commit()
                 return {"response": "success" , "data": data, "report":report_id}
+
+    @report_html.route('/<report_id>', doc={'description': 'Structure HTML d\'un rapport'})
+    @report_html.doc(params={'report_id': 'identifiant du rapport'})
+    class updateReportStructure(Resource):
+        def post(self,report_id):
+            html = request.get_data(as_text=True)
+            if not html:
+                data = {"response": "ERROR no data supplied"}
+                return data, 405
+            else:
+                up = updateReportHTML("/".join([app.config['MREPORT_LOCATION'], "reports", report_id, "report.html"]), html)
+                return {"response": up}
+
+
+
+
 if __name__ == "__main__":
     app.run(host='127.0.0.1')
