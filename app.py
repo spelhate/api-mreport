@@ -180,9 +180,15 @@ class GetReport(Resource):
                     rep = Report(**data)
                 except TypeError as err:
                     return {"response": str(err)}, 400
-                db.session.add(rep)
-                db.session.commit()
-                return {"response": "success" , "data": data, "report":report_id}
+                source = "/".join([app.config['MREPORT_LOCATION'], "reports", "models", "default"])
+                destination = "/".join([app.config['MREPORT_LOCATION'], "reports", report_id])
+                fss = createFileSystemStructure(source, destination)
+                if fss == 'success':
+                    db.session.add(rep)
+                    db.session.commit()
+                    return {"response": "success" , "data": data, "report":report_id}
+                else:
+                    return {"response": "Error" , "error": fss}
     @report.expect(report_fields)
     def post(self, report_id):
         data = request.get_json()

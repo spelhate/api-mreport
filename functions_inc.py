@@ -1,5 +1,6 @@
 from sqlalchemy.exc import NoInspectionAvailable
 from sqlalchemy import inspect
+import shutil
 ## Use for (select *) from a single table ex : {'datavizs': json.loads(json.dumps([row2dict(r) for r in result]))}
 def row2dict(row,label="null"):
     d = {}
@@ -14,7 +15,7 @@ def row2dict(row,label="null"):
     except NoInspectionAvailable:
         d[label]=row
     return d
-    
+
 ## Use for (select atr1,atr2 ...) ex : {'reports': json.loads(json.dumps(dict_builder(result)))}.
 def dict_builder(result):
     dlist = []
@@ -32,3 +33,14 @@ def insertdb(file,schema):
     fd.close()
     sqlFile = sqlFile.replace("schema.",schema)
     return sqlFile
+
+def createFileSystemStructure(src, dest):
+    try:
+        shutil.copytree(src, dest)
+        return 'success'
+    # Directories are the same
+    except shutil.Error as e:
+        return 'Directory not copied. Error: %s' % e
+    # Any error saying that the directory doesn't exist
+    except OSError as e:
+        return 'Directory not copied. Error: %s' % e
