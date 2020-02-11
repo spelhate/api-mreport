@@ -98,18 +98,14 @@ dataviz_post = api.model('Dataviz_post', {
 @store.route('/<string:dataviz_id>/data/sample',doc={'Données':'Données associées à une dataviz'})
 class DatavizData(Resource):
     def get(self, dataviz_id):
-        result = db.session.query(Dataviz).all()
-        sql = text('''
-            SELECT dataset, "order", label, data
-	FROM data.rawdata where dataviz = :dataviz_id and
-	dataid in (SELECT max(dataid) FROM data.rawdata where dataviz = :dataviz_id)
-	order by dataset, "order";
-        ''')
-        engine = create_engine(app.config['SQLALCHEMY_DATABASE_URI'])
-        connection = engine.connect()
-        sql.bindparams(bindparam("dataviz_id", type_=String))
-        result = connection.execute(sql, {"dataviz_id": dataviz_id})
-        data = {'data': json.loads(json.dumps([dict(r) for r in result]))}
+        result = db.session.query(Rawdata.dataset, Rawdata.order,Rawdata.label,Rawdata.data).filter(Rawdata.dataviz == dataviz_id).filter(Rawdata.dataid.in_(db.session.query(db.func.max(Rawdata.dataid)).filter(Rawdata.dataviz == dataviz_id).all())).order_by(Rawdata.dataset,Rawdata.order).all()
+        '''
+            db.session.query(Rawdata.dataset, Rawdata.order,Rawdata.label,Rawdata.data)
+            .filter(Rawdata.dataviz == dataviz_id)
+            .filter(Rawdata.dataid.in_(db.session.query(db.func.max(Rawdata.dataid)).filter(Rawdata.dataviz == dataviz_id).all()))
+            .order_by(Rawdata.dataset,Rawdata.order).all()
+        '''
+        data = {'items': json.loads(json.dumps(dict_builder(result)))}
         return jsonify(**data)
 
 @store.route('/<string:dataviz_id>',doc={'description':'Création/Modification/Suppression d\'une dataviz'})
