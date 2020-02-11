@@ -40,23 +40,14 @@ try :
 except KeyError :
     # Uncomment these lines to insert sample data when creating the database
     '''
-        event.listen(db.metadata, "after_create", db.DDL(insertdb("Datainit/dataid.sql","")))
-        event.listen(db.metadata, "after_create", db.DDL(insertdb("Datainit/report.sql","")))
-        event.listen(db.metadata, "after_create", db.DDL(insertdb("Datainit/dataviz.sql","")))
-        event.listen(db.metadata, "after_create", db.DDL(insertdb("Datainit/report_composition.sql","")))
-        event.listen(db.metadata, "after_create", db.DDL(insertdb("Datainit/rawdata.sql","")))
-    '''
-
-    #event.listen(db.metadata, "after_create", db.DDL(insertdb("Datainit/alimentation.sql",schema+".")))
-except KeyError :
-    '''event.listen(db.metadata, "after_create", db.DDL(insertdb("Datainit/dataid.sql","")))
+    event.listen(db.metadata, "after_create", db.DDL(insertdb("Datainit/dataid.sql","")))
     event.listen(db.metadata, "after_create", db.DDL(insertdb("Datainit/report.sql","")))
     event.listen(db.metadata, "after_create", db.DDL(insertdb("Datainit/dataviz.sql","")))
     event.listen(db.metadata, "after_create", db.DDL(insertdb("Datainit/report_composition.sql","")))
     event.listen(db.metadata, "after_create", db.DDL(insertdb("Datainit/rawdata.sql","")))
-
-    print("If you want to add a schema edit config.py with SCHEMA variable")
     '''
+    print("If you want to add a schema edit config.py with SCHEMA variable")
+    
 from models import *
 
 app.wsgi_app = CherrokeeFix(app.wsgi_app, app.config['APP_PREFIX'], app.config['APP_SCHEME'])
