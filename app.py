@@ -96,7 +96,7 @@ class DatavizData(Resource):
             .filter(Rawdata.dataid.in_(db.session.query(db.func.max(Rawdata.dataid)).filter(Rawdata.dataviz == dataviz_id).all()))
             .order_by(Rawdata.dataset,Rawdata.order).all()
         '''
-        data = {'items': json.loads(json.dumps(dict_builder(result)))}
+        data = {'data': json.loads(json.dumps(dict_builder(result)))}
         return jsonify(**data)
 
 @store.route('/<string:dataviz_id>',doc={'description':'Création/Modification/Suppression d\'une dataviz'})
