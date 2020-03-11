@@ -34,15 +34,20 @@ try :
     schema = app.config['SCHEMA']
     event.listen(db.metadata, 'before_create', CreateSchema(schema))
     event.listen(db.metadata, 'after_drop', DropSchema(schema))
-    #event.listen(db.metadata, "after_create", db.DDL(insertdb("Datainit/alimentation.sql",schema+".")))
+
+    #  Uncomment these lines to insert sample data when creating the database  
+    #  event.listen(db.metadata, "after_create", db.DDL(insertdb("Datainit/alimentation.sql",schema+".")))
 except KeyError :
-    '''event.listen(db.metadata, "after_create", db.DDL(insertdb("Datainit/dataid.sql","")))
+    # Uncomment these lines to insert sample data when creating the database
+    '''
+    event.listen(db.metadata, "after_create", db.DDL(insertdb("Datainit/dataid.sql","")))
     event.listen(db.metadata, "after_create", db.DDL(insertdb("Datainit/report.sql","")))
     event.listen(db.metadata, "after_create", db.DDL(insertdb("Datainit/dataviz.sql","")))
     event.listen(db.metadata, "after_create", db.DDL(insertdb("Datainit/report_composition.sql","")))
     event.listen(db.metadata, "after_create", db.DDL(insertdb("Datainit/rawdata.sql","")))
-    print("If you want to add a schema edit config.py with SCHEMA variable")
     '''
+    print("If you want to add a schema edit config.py with SCHEMA variable")
+    
 from models import *
 
 app.wsgi_app = CherrokeeFix(app.wsgi_app, app.config['APP_PREFIX'], app.config['APP_SCHEME'])
@@ -84,18 +89,14 @@ dataviz_post = api.model('Dataviz_post', {
 @store.route('/<string:dataviz_id>/data/sample',doc={'Données':'Données associées à une dataviz'})
 class DatavizData(Resource):
     def get(self, dataviz_id):
-        result = db.session.query(Dataviz).all()
-        sql = text('''
-            SELECT dataset, "order", label, data
-	FROM data.rawdata where dataviz = :dataviz_id and
-	dataid in (SELECT max(dataid) FROM data.rawdata where dataviz = :dataviz_id)
-	order by dataset, "order";
-        ''')
-        engine = create_engine(app.config['SQLALCHEMY_DATABASE_URI'])
-        connection = engine.connect()
-        sql.bindparams(bindparam("dataviz_id", type_=String))
-        result = connection.execute(sql, {"dataviz_id": dataviz_id})
-        data = {'data': json.loads(json.dumps([dict(r) for r in result]))}
+        result = db.session.query(Rawdata.dataset, Rawdata.order,Rawdata.label,Rawdata.data).filter(Rawdata.dataviz == dataviz_id).filter(Rawdata.dataid.in_(db.session.query(db.func.max(Rawdata.dataid)).filter(Rawdata.dataviz == dataviz_id).all())).order_by(Rawdata.dataset,Rawdata.order).all()
+        '''
+            db.session.query(Rawdata.dataset, Rawdata.order,Rawdata.label,Rawdata.data)
+            .filter(Rawdata.dataviz == dataviz_id)
+            .filter(Rawdata.dataid.in_(db.session.query(db.func.max(Rawdata.dataid)).filter(Rawdata.dataviz == dataviz_id).all()))
+            .order_by(Rawdata.dataset,Rawdata.order).all()
+        '''
+        data = {'data': json.loads(json.dumps(dict_builder(result)))}
         return jsonify(**data)
 
 @store.route('/<string:dataviz_id>',doc={'description':'Création/Modification/Suppression d\'une dataviz'})
